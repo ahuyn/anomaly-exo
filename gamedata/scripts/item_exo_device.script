@@ -1,0 +1,455 @@
+-- map of exoskeletons to their power supplies
+--[[
+    key: id
+    value: {
+        current power
+        supply: {
+            name
+            drain mult
+            max
+        }
+    }
+]]
+local exo_devices = {}
+-- cached properties of exo devices
+local cache = {}
+
+function print_dbg(txt, ...)
+	if exo_mcm.get_config("debug") then
+		printf("arti_exo | %s | " .. txt, time_global(), ...)
+	end
+end
+
+
+function init()
+    local ini_exo_device = ini_file("items\\settings\\exo_devices.ltx")
+    
+    -- amper_factor = ini_device:r_float_ex("settings","amper_factor") or 1000
+    -- map psu props
+	local n = ini_exo_device:line_count("dev_props")
+    for i=0,n-1 do
+        local result, sec, value = ini_exo_device:r_line_ex("dev_props",i,"","")
+        local vals = str_explode(value, ",")
+        cache[sec] = {
+            ["name"] = sec,
+            ["drain"] = tonumber(vals[1]) or 1,
+            ["max"] = tonumber(vals[2]) or 100
+        }
+    end
+    n = ini_exo_device:line_count("spec_props")
+    for i=0,n-1 do
+        local result, sec, value = ini_exo_device:r_line_ex("spec_props",i,"","")
+        cache[sec].ability = value
+    end
+    -- map exo drain base
+    n = ini_exo_device:line_count("suit_drain")
+    for i=0,n-1 do
+        local result, sec, value = ini_exo_device:r_line_ex("suit_drain",i,"","")
+        cache[sec] = tonumber(value)
+    end
+end
+
+-- data management
+function get_data(id)
+    if exo_devices[id] then
+        return dup_table(exo_devices[id])
+    end
+end
+
+function set_data(id, data)
+    -- validate the data first
+    if not data then
+        print_dbg("No data set for id %s, initializing", id)
+        data = {}
+        data.power = 0
+    end
+    if data.supply then
+        local name = data.supply.name
+        if not cache[name] then
+            data.supply = nil
+        end
+    end
+    exo_devices[id] = data
+end
+
+function init_data(id)
+    local data = {}
+    data.power = 0
+    set_data(id, data)
+    return data
+end
+
+-- helpers
+-- check if obj is exo outfit
+function is_exo(obj)
+    local section = obj and obj:section() or false
+    if section then
+        return SYS_GetParam(0, section, "repair_type") == "outfit_exo"
+    end
+    return false
+end
+
+-- check if actor is wearing exo
+function is_wearing_exo() 
+    local outfit = db.actor:item_in_slot(7)
+    return is_exo(outfit)
+end
+
+-- right-click options
+-- remove supply from exo
+function check_remove_psu(obj)
+	local p = obj:parent()
+	if not (p and p:id() == AC_ID) then return false end
+	
+    local id = obj:id()
+    local data = get_data(id)
+    if not data or is_empty(data) then return end
+    if not data.supply then return end
+    return "st_remove_psu"
+end
+
+function remove_psu(obj)
+    local id = obj:id()
+    local data = get_data(id)
+    if not data or is_empty(data) then return end
+    if not data.supply then return end
+    if data.power > 100 then data.power = 100 end
+    alife_create_item(data.supply.name, db.actor)
+    local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
+    if current_id == id then
+        print_dbg("Remove PSU: Prior weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
+        obj:set_additional_max_weight(obj:get_additional_max_weight() + SYS_GetParam(2, data.supply.name, "inv_weight"))
+        print_dbg("Remove PSU: After weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
+    end
+    data.supply = nil
+    set_data(id, data)
+end
+
+function install_psu(suit, data, psu)
+    if data.supply ~= nil then
+        remove_psu(suit)
+    end
+    local sec_p = psu:section()
+    if cache[sec_p] then
+        
+        data.supply = dup_table(cache[sec_p])
+        print_dbg("Installing PSU %s with drain %s, capacity %s", data.supply.name, data.supply.drain, data.supply.max)
+        
+        local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
+        if current_id == suit:id() then
+            print_dbg("Install PSU: Prior weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
+            suit:set_additional_max_weight(suit:get_additional_max_weight() - SYS_GetParam(2, data.supply.name, "inv_weight"))
+            print_dbg("Install PSU: After weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
+        end
+        set_data(suit:id(), data)
+        alife_release(psu)
+        -- play some sound?
+    	xr_sound.set_sound_play(AC_ID,"inv_aam_open")
+    end
+end
+-- charge exo with battery
+
+function menu_battery(obj)
+	local p = obj:parent()
+	if not (p and p:id() == AC_ID) then
+		return false
+	end
+	local suit = db.actor:item_in_slot(7)
+    if not is_exo(suit) then return end
+    local id = suit:id()
+    local data = get_data(id)
+    if not data then data = init_data(id) end
+    local max_power = data.supply and data.supply.max or 100
+    if data.power < max_power then
+        return "st_charge_exo"
+    end
+    return false
+end
+function func_battery(obj)
+	local p = obj:parent()
+	if not (p and p:id() == AC_ID) then
+		return
+	end
+	local suit = db.actor:item_in_slot(7)
+    if not is_exo(suit) then return end
+    local id = suit:id()
+    local data = get_data(id)
+    if not data then data = init_data(id) end
+    charge_exo(obj, suit, data)
+end
+
+-- install psu
+function check_install_psu(obj)
+	local p = obj:parent()
+	if not (p and p:id() == AC_ID) then
+		return
+	end
+    
+	local suit = db.actor:item_in_slot(7)
+    if not is_exo(suit) then return false end
+    local id = suit:id()
+    local data = get_data(id)
+    if not data then data = init_data(id) end
+    return "st_install_psu"
+end
+function func_install_psu(obj)
+	local p = obj:parent()
+	if not (p and p:id() == AC_ID) then
+		return
+	end
+	local suit = db.actor:item_in_slot(7)
+    if not is_exo(suit) then return end
+    local data = get_data(suit:id())
+    if not data then data = init_data(suit:id()) end
+    install_psu(suit, data, obj)
+end
+-- use the battery to charge the suit
+function charge_exo(battery, suit, data)
+    print_dbg("begin charge exo")
+    local max_restorable = (data.supply and data.supply.max or 100) - data.power
+    local batt_power = math.ceil(battery:condition() * 100)
+    local to_restore = math.min(max_restorable, batt_power)
+    print_dbg("max_restorable is %s, battery power is %s. restoring %s", max_restorable, batt_power, to_restore)
+    if to_restore > 0 then
+        data.power = data.power + to_restore
+        batt_power = batt_power - to_restore
+        if batt_power == 0 then 
+            alife_release(battery) 
+        else
+            battery:set_condition(batt_power/100)
+        end
+        set_data(suit:id(), data)
+        actor_effects.play_item_fx("batteries_dead")
+        utils_obj.play_sound("interface\\inv_batt")
+    end
+end
+
+local current_outfit
+
+function actor_item_to_ruck(obj)
+    local id = obj:id()
+    local c_outfit_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0 
+    print_dbg("to ruck, saved id %s, current id %s, obj id %s", current_outfit, c_outfit_id, id)
+    if id == current_outfit and id ~= c_outfit_id then    
+        local data = get_data(id)
+        if data.supply then
+            local weight = SYS_GetParam(2, data.supply.name, "inv_weight")
+            obj:set_additional_max_weight(obj:get_additional_max_weight() + weight)
+            print_dbg("modifying weight by +%s, final weight %s", weight, obj:get_additional_max_weight())
+        end
+    end
+end
+
+function actor_item_to_slot(obj)
+    local id = obj:id()
+    print_dbg("to slot, current id %s, obj id %s", current_outfit, id)
+    local data = get_data(id)
+    if data then
+        current_outfit = id
+        if data.supply then
+            local weight = SYS_GetParam(2, data.supply.name, "inv_weight")
+            obj:set_additional_max_weight(obj:get_additional_max_weight() - weight)
+            print_dbg("modifying weight by -%s, final weight %s", weight, obj:get_additional_max_weight())
+        end
+    end
+end
+
+function actor_on_first_update()
+    init()
+    -- local suit = db.actor:item_in_slot(7)
+    -- if suit then 
+    --     print_dbg("doing one time weight mgmt")
+    --     actor_item_to_slot(suit) 
+    -- end
+end
+-- drag battery onto suit, or power device onto suit
+local function on_item_drag_dropped(obj_d, obj_o, slot_from, slot_to)
+	-- Check capability
+	if not (slot_from == EDDListType.iActorBag and (slot_to == EDDListType.iActorBag or slot_to == EDDListType.iActorSlot)) then
+        return
+    end
+	
+	local sec_d = obj_d:section() -- battery or device
+    local sec_o = obj_o:section() -- suit
+    print_dbg("dragged %s on %s", sec_d, sec_o)
+    if is_exo(obj_o) then
+        local id = obj_o:id()
+        local data = get_data(id)
+        if not data then data = init_data(id) end
+        if sec_d == "batteries_exo" then
+            -- charge exo
+            charge_exo(obj_d, obj_o, data)
+        elseif SYS_GetParam(1, sec_d, "is_psu") then
+            -- replace the psu
+            install_psu(obj_o, data, obj_d)
+        end
+    end
+end
+
+
+-- player slowing management
+local slow_coef = 0.1
+local is_player_slowed = false
+local function slow_player()
+    if not is_player_slowed then
+        print_dbg("slowing player")
+        is_player_slowed = true
+        speed.add_speed("exo_speed", slow_coef, false, true)
+	end
+end
+
+local function reset_speed()
+    if is_player_slowed then
+        print_dbg("restoring speed")
+        is_player_slowed = false
+        speed.add_speed("exo_speed", 1, false, true)
+    end
+end
+
+local updated = 0
+local interval = 400
+function actor_on_update()
+    if time_global() < updated then return end
+    updated = time_global() + interval
+    
+    -- update power
+    if is_wearing_exo() then
+        manage_drain()
+    end
+
+    -- update speed
+	if (not is_wearing_exo()) then
+        reset_speed()
+	else
+		if exo_charged() then reset_speed() else slow_player() end
+	end
+end
+
+function exo_charged()
+    local exosuit = db.actor:item_in_slot(7)
+
+    if exosuit and is_exo(exosuit) then
+        local id = exosuit:id()
+        local data = get_data(id)
+        if not data then data = init_data(id) end
+        return data.power > 0
+    end
+    return false
+end
+
+-- modify drain by 
+local function modify_drain(base_drain, data)
+    local drain_mult = exo_mcm.get_config("drain") or 1
+    if data.supply then base_drain = base_drain * data.supply.drain end
+	if IsMoveState("mcSprint") then
+        local fast_mult = exo_mcm.get_config("sprint_drain")
+		return base_drain * fast_mult * drain_mult
+	elseif IsMoveState("mcAnyMove") then
+		return base_drain * drain_mult
+	end
+    if data.supply and data.supply.ability == "recharge" then return -0.001
+    else return 0 end
+end
+
+-- every tick, update the supply power accordingly
+function manage_drain()
+    local exosuit = db.actor:item_in_slot(7)
+    if exosuit and is_exo(exosuit) then
+        local id = exosuit:id()
+        local sec = exosuit:section()
+        local data = get_data(id)
+        if not data then data = init_data(id) end
+        local base_drain = cache[sec] or 0.01
+        base_drain = modify_drain(base_drain, data)
+        data.power = clamp(data.power - base_drain, 0, 400)
+        set_data(id, data)
+    end
+end
+
+
+CanRepair = inventory_upgrades.can_repair_item
+function inventory_upgrades.can_repair_item( sec, cond, mechanic )
+    if sec == "batteries_exo" then return false
+    else return CanRepair(sec, cond, mechanic) end
+end
+
+NameCustom = ui_inventory.UIInventory.Name_Custom
+-- hijack functions for exos
+function ui_inventory.UIInventory:Name_Custom(obj, bag, temp, i)
+	obj = self:CheckItem(obj,"Name_Custom " .. i)
+	if i == 3 and is_exo(obj) then
+		return check_remove_psu(obj)
+	else
+		return NameCustom(self, obj, bag, temp, i)
+	end
+end
+
+ActionCustom = ui_inventory.UIInventory.Action_Custom
+function ui_inventory.UIInventory:Action_Custom(obj, bag, temp, i)
+	obj = self:CheckItem(obj,"Action_Custom " .. i)
+	if i == 3 and is_exo(obj) then -- menu field strip
+		remove_psu(obj)
+	else
+		ActionCustom(self, obj, bag, temp, i)
+	end
+end
+
+local gc                  = game.translate_string
+local clr_r  = utils_xml.get_color("d_red")
+local clr_g  = utils_xml.get_color("d_green")
+local clr_y  = utils_xml.get_color("yellow")
+
+local clr_2  = utils_xml.get_color("ui_gray_1")
+original_build_desc_header = ui_item.build_desc_header
+function ui_item.build_desc_header(obj, sec, str)
+	local _str = ""
+	local _str2 = original_build_desc_header(obj, sec, str)
+	
+    -- display power + psu
+	if obj and is_exo(obj) then
+        local data = get_data(obj:id())
+        if not data then data = init_data(obj:id()) end
+
+        local display_str = ""
+        local power = string.format("%.2f", data.power)
+        local max_power = data.supply and data.supply.max or 100
+        local clr = utils_xml.get_color_con((data.power/max_power) * 100)
+        display_str =  display_str .."  " .. clr_y .. gc("st_dot") .. " " .. clr_2 ..  gc("st_power") .. " ".. clr .. data.power .. "/" .. max_power .. "\\n"
+        local psu = gc("st_equipped_none")
+        clr = clr_r
+        if data.supply then
+            psu = ui_item.get_sec_name(data.supply.name)
+            clr = clr_g
+        end
+        
+        display_str = display_str .. "  " .. clr_y .. gc("st_dot") .. " "  .. clr_2 .. gc("st_equipped_supply") .. " " .. clr .. psu .. clr_2 .. "\\n \\n"
+        _str = _str .. display_str
+    end
+	_str = _str2 .. _str
+
+	return _str
+end
+
+local function se_device_on_unregister(se_obj, typ)
+    local id = se_obj.id
+    exo_devices[id] = nil
+end
+
+local function save_state(mdata) 
+	mdata.exo_devices = exo_devices
+end
+
+local function load_state(mdata) 
+	exo_devices = mdata.exo_devices or {}
+end
+
+function on_game_start()
+    RegisterScriptCallback("save_state",save_state)
+    RegisterScriptCallback("load_state",load_state)
+    RegisterScriptCallback("ActorMenu_on_item_drag_drop",on_item_drag_dropped)
+	RegisterScriptCallback("server_entity_on_unregister",se_device_on_unregister)
+	RegisterScriptCallback("actor_on_update",actor_on_update)
+	RegisterScriptCallback("actor_item_to_slot",actor_item_to_slot)
+	RegisterScriptCallback("actor_item_to_ruck",actor_item_to_ruck)
+	RegisterScriptCallback("actor_on_first_update",actor_on_first_update)
+end

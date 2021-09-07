@@ -1,0 +1,23 @@
+-- If you don't use MCM, change your defaults from here.
+local defaults = {
+    drain			= 1.0,
+    sprint_drain    = 3.0,
+    loot_amt        = 1.0,
+    debug           = false
+}
+
+function get_config(key)
+    if ui_mcm then return ui_mcm.get("exo/"..key) else return defaults[key] end
+end
+
+function on_mcm_load()
+    op = { id= "exo",sh=true ,gr={
+            { id= "title",type= "slide",link= "ui_options_slider_player",text="ui_mcm_exo_title",size= {512,50},spacing= 20 },
+            {id = "drain", type = "track", val = 2, min=0.5,max=2,step=0.1, def = 1.0},
+            {id = "sprint_drain", type = "track", val = 2, min=1,max=5,step=0.5, def = 3},
+            -- {id = "loot_amt", type = "track", val = 2, min=0.3,max=2,step=0.1, def = 1.0},
+            {id = "debug", type = "check", val = 1, def=false},
+        }
+    }
+    return op
+end

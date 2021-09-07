@@ -1,0 +1,166 @@
+local last_click = nil
+local send_tip = news_manager.send_tip
+local gc = game.translate_string
+local is_exo = item_exo_device.is_exo
+local get_data = item_exo_device.get_data
+local init_data = item_exo_device.init_data
+local print_dbg = item_exo_device.print_dbg
+local effect = particles_object("artefact\\effects\\af_electra_show_flash_00")
+
+local function on_key_press(key)
+	local bind = dik_to_bind(key)
+	if bind == 7 then
+		-- print_dbg("Pressed sprint")
+		local tg = time_global()
+		if not last_click then last_click = tg
+		else
+			if tg < last_click + 400 then 
+				activate_powers()
+			end
+			last_click = nil
+		end
+	end
+end
+
+
+function activate_speed()
+	speed.add_speed("gotta_go_Fast", 1.5, false)
+	send_tip(db.actor, gc("st_act_sprint"), nil, "swiss_knife", 6000)
+	level.add_pp_effector("electra.ppe",6969,true)
+	-- electra ppe
+end
+
+function deactivate_speed()
+	speed.remove_speed("gotta_go_Fast")
+	level.remove_pp_effector(6969)
+end
+function activate_tank()
+	send_tip(db.actor, gc("st_act_tank"), nil, "swiss_knife", 6000)
+	speed.add_speed("gotta_go_Fast", 0.8, false)
+	level.add_pp_effector("blur.ppe",6969,true)
+	armored = true
+end
+function deactivate_tank()
+	speed.remove_speed("gotta_go_Fast")
+	level.remove_pp_effector(6969)
+	armored = false
+end
+local powers = {
+	["tank"] = {
+		activate_tank,
+		deactivate_tank
+	},
+	["sprint"] = {
+		activate_speed,
+		deactivate_speed
+	}
+}
+local current_outfit
+local start_time
+local DURATION = 8000
+local COOLDOWN = 20000
+local on_cooldown = false
+local power_active = false
+local armored = false
+local active_power
+function activate_powers()
+	if on_cooldown or power_active ~= false then 
+		-- cooling down
+		send_tip(db.actor, gc("st_err_cooldown"), nil, "swiss_knife", 6000)
+		return 
+	end
+    local exosuit = db.actor:item_in_slot(7)
+    if exosuit and is_exo(exosuit) then
+        local id = exosuit:id()
+        local sec = exosuit:section()
+        local data = get_data(id)
+        if not data then data = init_data(id) end
+		print_dbg("equipped power: %s", data.supply and data.supply.ability or "none")
+		if not data.supply  then return end
+		if not data.supply.ability or not powers[data.supply.ability] then
+			
+			send_tip(db.actor, gc("st_err_none"), nil, "swiss_knife", 6000) 
+			return 
+		end
+		if data.power < 30 then 
+			-- insufficient power
+			send_tip(db.actor, gc("st_err_power"), nil, "swiss_knife", 6000)
+			return 
+		end
+		data.power = clamp(data.power - 20, 0, 400)
+		power_active = data.supply.ability
+		start_time = time_global()
+		print_dbg("saved tg %s", start_time)
+		powers[data.supply.ability][1]()
+		current_outfit = id
+        CreateTimeEvent("exo_powers","activate_powers", 0, maintain_power, id)
+	end
+
+end
+-- continually run and watch for outfit changes
+function maintain_power()
+	local id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
+	if id ~= current_outfit then
+		print_dbg("bruh you switched")
+		deactivate_powers()
+		return true
+	end
+	if time_global() > start_time + DURATION then
+		print_dbg("time's up")
+		deactivate_powers()
+		return true
+	end
+	return false
+end
+
+function deactivate_powers()
+	powers[power_active][2]()
+	power_active = false
+	on_cooldown = true
+	CreateTimeEvent("exo_powers","deactivate_power", 20, reset_cooldown)
+end
+
+function reset_cooldown()
+	on_cooldown = false
+	send_tip(db.actor, gc("st_ok_cooldown"), nil, "swiss_knife", 6000)
+	return true
+end
+
+function actor_on_before_hit(s_hit)
+	if not (s_hit.type == hit.wound or s_hit.type == hit.fire_wound) then return end
+	if armored then
+		if s_hit.type == hit.fire_wound then s_hit.power = s_hit.power / 2 end
+		if s_hit.type == hit.wound then s_hit.power = s_hit.power / 10 end
+	end
+end
+
+local function ram()
+	if IsMoveState("mcSprint") and power_active == "sprint" then
+		local obj = level.get_target_obj()
+		local dist = level.get_target_dist()
+		if not obj or not (IsStalker(obj) or IsMonster(obj)) or dist > 2.1 then return end
+		local is_rhino = db.actor:item_in_slot(7) and string.find(db.actor:item_in_slot(7), "nosorog") or false
+		local h = hit()
+		h.type = hit.strike
+		h.draftsman = db.actor
+		h.power = is_rhino and 1 or 0.6
+		h.bone = "bip01_spine"
+		level.add_cam_effector("camera_effects\\hit_front.anm", 5923, false, "")
+		level.add_pp_effector("bloody.ppe", 9230, false)
+		level.set_pp_effector_factor(9230, 0.2)
+		obj:hit(h)
+		print_dbg("BONK")
+	end
+end
+
+function actor_on_footstep(material, power, hud_view, flags)
+    if not power_active then return end
+    effect:play_at_pos(db.actor:position())
+    ram()
+end
+
+function on_game_start()
+    RegisterScriptCallback("on_key_press",on_key_press)
+	
+    RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
+end

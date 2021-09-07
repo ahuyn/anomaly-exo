@@ -1,0 +1,103 @@
+
+
+;;--==========================< Exo PSU >=============================
+[exo_power_supply]:identity_immunities
+GroupControlSection                                    = spawn_group 
+discovery_dependency                                   = 
+$spawn                                                 = "food and drugs\harmonica_a"
+visual                                   = dynamics\devices\dev_rukzak\dev_rukzak.ogf
+class 								= II_ATTCH
+kind = i_device
+attach_angle_offset		                               = -0.287979, 1.560923, 1.544060
+attach_position_offset	                               = 0.096910, -0.013594, 0.107925
+attach_bone_name		                               = bip01_r_hand
+auto_attach				                               = false
+cform                                                  = skeleton 
+description                              = st_itm_exo_psu_descr
+inv_weight                               = 2.07
+inv_name                                 = st_itm_exo_psu_name
+inv_name_short                           = st_itm_exo_psu_name
+inv_grid_width                           = 2
+inv_grid_height                          = 2
+inv_grid_x                               = 0
+inv_grid_y                               = 0
+icons_texture                            = ui\ui_icon_exo_psu
+cost                                     = 5125
+use_condition							 = false
+is_psu                                   = true
+snd_on_take								    = outfit
+use2_functor                			= item_exo_device.check_install_psu
+use2_action_functor         		    = item_exo_device.func_install_psu
+
+
+[exo_power_supply_military]:exo_power_supply
+visual                                   = dynamics\psu\exo_backpack_proto.ogf
+description                              = st_itm_exo_psu_mili_descr
+inv_weight                               = 5.97
+inv_name                                 = st_itm_exo_psu_mili_name
+inv_name_short                           = st_itm_exo_psu_mili_name
+inv_grid_x                               = 2
+inv_grid_y                               = 0
+cost                                     = 15956
+
+[exo_power_supply_proto]:exo_power_supply
+visual                                   = dynamics\devices\psu\exo_psu_top.ogf
+description                              = st_itm_exo_psu_sci_descr
+inv_weight                               = 12.52
+inv_name                                 = st_itm_exo_psu_sci_name
+inv_name_short                           = st_itm_exo_psu_sci_name
+inv_grid_x                               = 4
+inv_grid_y                               = 0
+cost                                     = 55956
+1icon_layer_x       	                           = 100
+1icon_layer_y      		                           = 100
+1icon_layer_scale                        = 0.65
+1icon_layer                              = af_dummy_battery
+
+[exo_power_supply_tank]:exo_power_supply_proto
+description                              = st_itm_exo_psu_tank_descr
+inv_name                                 = st_itm_exo_psu_tank_name
+inv_name_short                           = st_itm_exo_psu_tank_name
+1icon_layer                              = af_empty
+
+[exo_power_supply_sprint]:exo_power_supply_proto
+description                              = st_itm_exo_psu_sprint_descr
+inv_name                                 = st_itm_exo_psu_sprint_name
+inv_name_short                           = st_itm_exo_psu_sprint_name
+1icon_layer                              = af_electra_flash
+
+
+[batteries_exo]:identity_immunities,tch_device
+$spawn 				                               = "food and drugs\kolbasa"
+$prefetch 			                               = 16
+kind								           = i_tool
+cform				                               = skeleton
+allow_repair                             		       = false
+visual				                               = dynamics\devices\psu\psu_battery.ogf
+inv_weight			                               = 2.85
+inv_name			                               = st_batteries_ccell
+inv_name_short		                               = st_batteries_ccell
+description			                               = st_batteries_ccell_descr
+inv_grid_width		                               = 2
+inv_grid_height		                               = 1
+inv_grid_x			                               = 0
+inv_grid_y			                               = 3
+icons_texture                                      = ui\ui_icon_exo_psu
+upgr_icon_path								 = ui\actor_items\ui_actor_items_1
+upgr_icon_x								 	 = 0
+upgr_icon_y								 	 = 0
+upgr_icon_width						 	 	 = 150
+upgr_icon_height						 	 = 100
+cost				                               = 5750
+attach_angle_offset		                           = 0.440521, 1.378287, -0.644026
+attach_position_offset	                           = 0.104196, -0.010821, 0.076969
+attach_bone_name		                           = bip01_r_hand
+auto_attach				                           = false
+bone_name				                           = bip01_r_hand
+position_offset			                           = 0.0,0.0,0.0
+angle_offset			                           = 1.570790,1.570790,3.92699
+;use_sound			                               = interface\inv_batt
+tier = 2
+use2_functor                			= item_exo_device.menu_battery
+use2_action_functor         		    = item_exo_device.func_battery
+
