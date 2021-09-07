@@ -1,0 +1,24 @@
+function on_mcm_load()
+    op ={ id= "exo_servo_sounds", sh=true ,gr =
+			{
+				{ id = "title", type= "slide", link= "ui_options_slider_player", text="ui_mcm_exo_servo_sounds_title", size= {512,50},spacing= 20 },
+				{ id = "volume_walk", type = "track", val = 2, min = 0, max = 1, step = 0.1, def = 1},
+				{ id = "volume_land", type = "track", val = 2, min = 0, max = 1, step = 0.1, def = 1},
+				{ id = "volume_jump", type = "track", val = 2, min = 0, max = 1, step = 0.1, def = 1},
+				{ id = "scale_freq" , type = "check", val = 1, def = true}
+			}
+		}
+    return op
+end
+
+local defaults = {
+    ["volume_walk"] = 1,
+	["volume_land"] = 1,
+	["volume_jump"] = 1,
+	["scale_freq"] = true
+}
+
+
+function get_config(key)
+    if ui_mcm then return ui_mcm.get("exo_servo_sounds/"..key) else return defaults[key] end
+end
