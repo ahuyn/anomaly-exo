@@ -15,7 +15,6 @@ function on_key_release(key)
     end
 
     local id = exosuit:id()
-    local sec = exosuit:section()
     local data = get_data(id)
 
     if not data.supply then
@@ -27,11 +26,11 @@ function on_key_release(key)
     local max_power = data.supply.max
     local power = data.power
     local coef = power / max_power
-    local power_level = math.floor(coef * 100) - (math.floor(coef * 100) % 5)
+    local power_level = clamp((math.floor(coef * 100) - (math.floor(coef * 100) % 5)), 5, 100)
     soundObject = sound_object("hev\\power_level_is_" .. power_level)
     soundObject:play(db.actor, 0, sound_object.s2d)
     soundObject.volume = coef * volume
-    local str = strformat(game.translate_string("st_check_power"), math.floor(coef * 100), "%")
+    local str = strformat(game.translate_string("st_check_power"), math.floor(coef * 100))
     actor_menu.set_msg(1, str, 3)
 end
 

@@ -29,8 +29,8 @@ local snd_obj_step
 local snd_obj_land
 local snd_obj_jump
 -- Util functions from powered exos
-local is_exo = item_exo_device.is_exo
-local get_data = item_exo_device.get_data
+is_exo = item_exo_device.is_exo
+get_data = item_exo_device.get_data
 
 -- table used for checking exo type (0 - 29 light, 30 - 49 middle, 50+ heavy) (Could just use ifs :p)
 local exo_types = {
@@ -45,8 +45,7 @@ local exo_type = "middle"
 
 --------------------------------------------------------------------------------------------------------
 -- checking if player is wearing an exo with power supply
-function check_exo_suit(item)
-    if not IsOutfit(item) then return end
+function check_exo_suit() -- now gets fired on footsteps, jumps and lands because idk how to properly track powersupply anymore
     exo_flag = false
     local actor = db.actor
     local exosuit = actor:item_in_slot(7)
@@ -54,13 +53,15 @@ function check_exo_suit(item)
     local id = exosuit:id()
     local data = get_data(id)
     local sec = exosuit:section()
-    if not data.supply then return end
+    if not data then return end
+	if not data.supply then return end
     exo_flag = true
     local weight = SYS_GetParam(0, sec, "inv_weight")
     exo_type = exo_types[math.floor(weight / 10)] or "heavy"
 end
 
-function get_power()
+function get_power() -- all validation gets done above, so this thingy can be unsafe
+	local actor = db.actor
     local exosuit = actor:item_in_slot(7)
     local id = exosuit:id()
     local data = get_data(id)
@@ -70,6 +71,7 @@ function get_power()
 end
 
 function actor_on_footstep(material, power, hud_view, flags)
+	check_exo_suit()
     if not exo_flag then return end
     snd_obj_step = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_walk" .. math.random(2)) -- not sure this is needed since pitch scales on second footstep already with frequency
     snd_obj_step:play(db.actor, 0, sound_object.s2d)
@@ -78,14 +80,15 @@ function actor_on_footstep(material, power, hud_view, flags)
 end
 
 function actor_on_land(landing_speed)
-    local land_speed = landing_speed
-    if not (exo_flag and land_speed > 5) then return end
+	check_exo_suit()
+    if not (exo_flag and landing_speed > 5) then return end
     snd_obj_land = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_landing")
     snd_obj_land:play(db.actor, 0, sound_object.s2d)
     snd_obj_land.volume = get_power() * volume_land * (landing_speed / 5)
 end
 
 function actor_on_jump()
+	check_exo_suit()
     if not exo_flag then return end
     snd_obj_jump = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_jump")
     snd_obj_jump:play(db.actor, 0, sound_object.s2d)
@@ -103,8 +106,6 @@ function on_game_start()
     RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
     RegisterScriptCallback("actor_on_land", actor_on_land)
     RegisterScriptCallback("actor_on_jump", actor_on_jump)
-    RegisterScriptCallback("actor_item_to_ruck", check_exo_suit)
-    RegisterScriptCallback("actor_item_to_slot", check_exo_suit)
     RegisterScriptCallback("on_option_change", on_option_change)
     on_option_change()
 end
