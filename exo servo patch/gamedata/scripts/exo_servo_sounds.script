@@ -1,0 +1,110 @@
+--[[
+Your game was crashed by Haruwu
+⣿⡇⣿⣿⣿⠛⠁⣴⣿⡿⠿⠧⠹⠿⠘⣿⣿⣿⡇⢸⡻⣿⣿⣿⣿⣿⣿⣿
+⢹⡇⣿⣿⣿⠄⣞⣯⣷⣾⣿⣿⣧⡹⡆⡀⠉⢹⡌⠐⢿⣿⣿⣿⡞⣿⣿⣿
+⣾⡇⣿⣿⡇⣾⣿⣿⣿⣿⣿⣿⣿⣿⣄⢻⣦⡀⠁⢸⡌⠻⣿⣿⣿⡽⣿⣿
+⡇⣿⠹⣿⡇⡟⠛⣉⠁⠉⠉⠻⡿⣿⣿⣿⣿⣿⣦⣄⡉⠂⠈⠙⢿⣿⣝⣿
+⠤⢿⡄⠹⣧⣷⣸⡇⠄⠄⠲⢰⣌⣾⣿⣿⣿⣿⣿⣿⣶⣤⣤⡀⠄⠈⠻⢮
+⠄⢸⣧⠄⢘⢻⣿⡇⢀⣀⠄⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠄⢀
+⠄⠈⣿⡆⢸⣿⣿⣿⣬⣭⣴⣿⣿⣿⣿⣿⣿⣿⣯⠝⠛⠛⠙⢿⡿⠃⠄⢸
+⠄⠄⢿⣿⡀⣿⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⡾⠁⢠⡇⢀
+⠄⠄⢸⣿⡇⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣏⣫⣻⡟⢀⠄⣿⣷⣾
+⠄⠄⢸⣿⡇⠄⠈⠙⠿⣿⣿⣿⣮⣿⣿⣿⣿⣿⣿⣿⣿⡿⢠⠊⢀⡇⣿⣿
+⠒⠤⠄⣿⡇⢀⡲⠄⠄⠈⠙⠻⢿⣿⣿⠿⠿⠟⠛⠋⠁⣰⠇⠄⢸⣿⣿⣿
+⠄⠄⠄⣿⡇⢬⡻⡇⡄⠄⠄⠄⡰⢖⠔⠉⠄⠄⠄⠄⣼⠏⠄⠄⢸⣿⣿⣿
+⠄⠄⠄⣿⡇⠄⠙⢌⢷⣆⡀⡾⡣⠃⠄⠄⠄⠄⠄⣼⡟⠄⠄⠄⠄⢿⣿⣿
+
+Script that plays servomotor sounds with all kinds of scaling patched for powered exos
+Last edit: 07-09-2021
+]]
+--< VARIABLES >------------------------------------------------------------------------------------------
+-- mcm settings
+local volume_walk = 1
+local volume_jump = 1
+local volume_land = 1
+local scale_freq = true
+-- sound objects (defined and stored here so they're not cleared by garbage collector)
+local snd_obj_step
+local snd_obj_land
+local snd_obj_jump
+-- Util functions from powered exos
+is_exo = item_exo_device.is_exo
+get_data = item_exo_device.get_data
+
+-- table used for checking exo type (0 - 29 light, 30 - 49 middle, 50+ heavy) (Could just use ifs :p)
+local exo_types = {
+    [0] = "light",
+    [1] = "light",
+    [2] = "light",
+    [3] = "middle",
+    [4] = "middle"
+}
+
+-- exo type
+local exo_type = "middle"
+
+--------------------------------------------------------------------------------------------------------
+-- checking if player is wearing an exo with power supply
+-- now gets fired on footsteps, jumps and lands because idk how to properly track powersupply anymore
+function check_exo_suit()
+    local actor = db.actor
+    local exosuit = actor:item_in_slot(7)
+    if not (exosuit and is_exo(exosuit)) then return false end
+    local id = exosuit:id()
+    local data = get_data(id)
+    local sec = exosuit:section()
+    if not data then return false end
+    if not data.supply then return false end
+    local weight = SYS_GetParam(0, sec, "inv_weight")
+    exo_type = exo_types[math.floor(weight / 10)] or "heavy"
+
+    return true
+end
+
+-- all validation gets done above, so this thingy can be unsafe
+function get_power()
+    local actor = db.actor
+    local exosuit = actor:item_in_slot(7)
+    local id = exosuit:id()
+    local data = get_data(id)
+    local coef = data.power / data.supply.max
+
+    return coef
+end
+
+function actor_on_footstep(material, power, hud_view, flags)
+    if not check_exo_suit() then return end
+    snd_obj_step = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_walk" .. math.random(2)) -- not sure this is needed since pitch scales on second footstep already with frequency
+    snd_obj_step:play(db.actor, 0, sound_object.s2d)
+    snd_obj_step.volume = get_power() * volume_walk * clamp(power, 0.5, 1.3)
+    snd_obj_step.frequency = scale_freq and clamp(power, 0.8, 1.1) or 1 -- lower max point of pitch, since high pitch is not cool on ears and I didn't get any feedback in tester chat
+end
+
+function actor_on_land(landing_speed)
+    if not (check_exo_suit() and landing_speed > 5) then return end
+    snd_obj_land = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_landing")
+    snd_obj_land:play(db.actor, 0, sound_object.s2d)
+    snd_obj_land.volume = get_power() * volume_land * (landing_speed / 5)
+end
+
+function actor_on_jump()
+    if not check_exo_suit() then return end
+    snd_obj_jump = sound_object("exo-servo\\" .. exo_type .. "_servo_exo_jump")
+    snd_obj_jump:play(db.actor, 0, sound_object.s2d)
+    snd_obj_jump.volume = get_power() * volume_jump
+end
+
+function on_option_change()
+    volume_walk = exo_servo_sounds_mcm.get_config("volume_walk")
+    volume_jump = exo_servo_sounds_mcm.get_config("volume_jump")
+    volume_land = exo_servo_sounds_mcm.get_config("volume_land")
+    scale_freq = exo_servo_sounds_mcm.get_config("scale_freq")
+end
+
+function on_game_start()
+    RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
+    RegisterScriptCallback("actor_on_land", actor_on_land)
+    RegisterScriptCallback("actor_on_jump", actor_on_jump)
+    RegisterScriptCallback("on_option_change", on_option_change)
+    on_option_change()
+end
