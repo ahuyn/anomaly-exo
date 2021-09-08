@@ -77,7 +77,7 @@ function blast()
 	
     h.type = hit.shock
     h.draftsman = db.actor
-    h.power = 1
+    h.power = 1.5
     h.bone = "bip01_spine"
     level.add_pp_effector("blink.ppe", 6969, false)
     level.set_pp_effector_factor(6969, 0.1)
