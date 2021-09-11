@@ -115,7 +115,7 @@ local powers = {
 local current_outfit
 local start_time
 local DURATION = 8000
-local COOLDOWN = 20000
+local COOLDOWN = 20
 local on_cooldown = false
 local power_active = false
 local armored = false
@@ -149,38 +149,41 @@ function activate_powers()
             return
         end
 
-        if data.power < 30 then
+        local drain = SYS_GetParam(2, data.supply.name, "power_cost") or 20
+
+        if data.power < drain + 10 then
             -- insufficient power
             send_tip(db.actor, gc("st_err_power"), nil, "swiss_knife", 6000)
 
             return
         end
 
-        data.power = clamp(data.power - 20, 0, 400)
+        data.power = clamp(data.power - drain, 0, 400)
         set_data(id, data)
         power_active = data.supply.ability
         start_time = time_global()
         print_dbg("saved tg %s", start_time)
         powers[data.supply.ability][1]()
         current_outfit = id
-        CreateTimeEvent("exo_powers", "activate_powers", 0, maintain_power, id)
+        local duration =( SYS_GetParam(2, data.supply.name, "power_duration") * 1000) or DURATION 
+        local cooldown = SYS_GetParam(2, data.supply.name, "power_cooldown") or COOLDOWN 
+        CreateTimeEvent("exo_powers", "activate_powers", 0, maintain_power, duration, cooldown)
     end
 end
 
 -- continually run and watch for outfit changes
-function maintain_power()
+function maintain_power(duration, cooldown)
     local id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
-
+    print_dbg("power active, duration = %s", duration)
     if id ~= current_outfit then
         print_dbg("bruh you switched")
         deactivate_powers()
-
         return true
     end
 
-    if time_global() > start_time + DURATION then
+    if time_global() > start_time + duration then
         print_dbg("time's up")
-        deactivate_powers()
+        deactivate_powers(cooldown)
 
         return true
     end
@@ -188,11 +191,11 @@ function maintain_power()
     return false
 end
 
-function deactivate_powers()
+function deactivate_powers(cooldown)
     powers[power_active][2]()
     power_active = false
     on_cooldown = true
-    CreateTimeEvent("exo_powers", "deactivate_power", 20, reset_cooldown)
+    CreateTimeEvent("exo_powers", "deactivate_power", cooldown, reset_cooldown)
 end
 
 function reset_cooldown()

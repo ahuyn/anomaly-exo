@@ -26,6 +26,9 @@ cost                                     = 5125
 use_condition							 = false
 is_psu                                   = true
 snd_on_take								    = outfit
+power_cost                              = 20
+power_duration                          = 8
+power_cooldown                          = 20
 use2_functor                			= item_exo_device.check_install_psu
 use2_action_functor         		    = item_exo_device.func_install_psu
 
@@ -49,6 +52,7 @@ inv_name_short                           = st_itm_exo_psu_sci_name
 inv_grid_x                               = 4
 inv_grid_y                               = 0
 cost                                     = 55956
+power_duration                          = 1
 1icon_layer_x       	                           = 100
 1icon_layer_y      		                           = 100
 1icon_layer_scale                        = 0.65
@@ -59,12 +63,14 @@ description                              = st_itm_exo_psu_tank_descr
 inv_name                                 = st_itm_exo_psu_tank_name
 inv_name_short                           = st_itm_exo_psu_tank_name
 1icon_layer                              = af_empty
+power_duration                          = 8
 
 [exo_power_supply_sprint]:exo_power_supply_proto
 description                              = st_itm_exo_psu_sprint_descr
 inv_name                                 = st_itm_exo_psu_sprint_name
 inv_name_short                           = st_itm_exo_psu_sprint_name
 1icon_layer                              = af_electra_flash
+power_duration                          = 8
 
 
 [batteries_exo]:identity_immunities,tch_device

@@ -10,7 +10,7 @@
 		<text>Jury-rigged Exoskeleton power supply</text>
 	</string>
 	<string id="st_itm_exo_psu_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to increase their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n\nThis type of power supply is haphazardly put together and quite inefficient. While lightweight, it only offers a marginal bonus to energy capacity. One of the major drawbacks to most exoskeletons is that they are intended to be fielded for a short amount of time, usually in pitched battles before returning to base to reacharge. External power supplies like these can partially alleviate the problem, but, as clearly shown by this, do not necessarily work so well.\n\n
+		<text>Auxiliary power supply equipped on exoskeletons to increase their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis type of power supply is haphazardly put together and quite inefficient. While lightweight, it only offers a marginal bonus to energy capacity. One of the major drawbacks to most exoskeletons is that they are intended to be fielded for a short amount of time, usually in pitched battles before returning to base to reacharge. External power supplies like these can partially alleviate the problem, but, as clearly shown by this, do not necessarily work so well.\n\n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] increases power capacity by 50%\n
@@ -21,7 +21,7 @@
 		<text>Mil-spec Exoskeleton power supply</text>
 	</string>
 	<string id="st_itm_exo_psu_mili_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\nThis model is professionally made in a factory and mounts seamlessly to an exoskeleton. It is hefty but very durable and quite energy-efficient, providing a substantial boost to energy capacity and a minor benefit to energy efficiency. However, it is quite heavy.\n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is professionally made in a factory and mounts seamlessly to an exoskeleton. It is hefty but very durable and quite energy-efficient, providing a substantial boost to energy capacity and a minor benefit to energy efficiency. However, it is quite heavy.\n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] military item\n
@@ -34,13 +34,14 @@
 		<text>Experimental PSU "Reactor"</text>
 	</string>
 	<string id="st_itm_exo_psu_sci_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists, using the latently static properties of the Battery artifact to generate endless amounts of power. The contained artifact feedback loop continuously generates small amounts of power, and passively charges the power supply of existing exoskeletons - while it is a near limitless power source, the copious amounts of containment and shielding built into the backpack make it unbearably heavy. \n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists, using the latently static properties of the Battery artifact to generate endless amounts of power. The contained artifact feedback loop continuously generates small amounts of power, and passively charges the power supply of existing exoskeletons - while it is a near limitless power source, the copious amounts of containment and shielding built into the backpack make it unbearably heavy. \n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] prototype device\n
 		%c[d_blue] • %c[ui_gray_2] increases power capacity by 200%\n
 		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 80%\n
 		%c[d_blue] • %c[ui_gray_2] passively regenerate power while standing still\n
+		%c[d_blue] • %c[ui_gray_2] double-tap shift to launch electrical nova\n
 		</text>
 	</string>
 	
@@ -48,7 +49,7 @@
 		<text>Experimental PSU "Stronghold"</text>
 	</string>
 	<string id="st_itm_exo_psu_tank_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists. Designed to be complement frontline troops who need to push forward in heavy fire, this prototype uses the gravitational properties of the Empty artifact to generate a localized anomaly zone on activation. The anomaly zone is centered on the user and effectively slows down high-velocity projectiles and shrapnel, as well as rendering mutant attacks useless. However, the gravity well interferes with user movement. \n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists. Designed to be complement frontline troops who need to push forward in heavy fire, this prototype uses the gravitational properties of the Empty artifact to generate a localized anomaly zone on activation. The anomaly zone is centered on the user and effectively slows down high-velocity projectiles and shrapnel, as well as rendering mutant attacks useless. However, the gravity well interferes with user movement. \n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] prototype device\n
@@ -63,7 +64,7 @@
 		<text>Experimental PSU "Engine"</text>
 	</string>
 	<string id="st_itm_exo_psu_sprint_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists. Designed to add mobility options for shock troopers, this prototype uses the capactive properties of the Flash artifact to power a customized set of servomotors. The Flash artifact can be temporarily activated to vastly increase user mobility. The vastly increased movespeed also allows the user to deal massive damage to any creature or person caught in their path.\n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists. Designed to add mobility options for shock troopers, this prototype uses the capactive properties of the Flash artifact to power a customized set of servomotors. The Flash artifact can be temporarily activated to vastly increase user mobility. The vastly increased movespeed also allows the user to deal massive damage to any creature or person caught in their path.\n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] valuable\n
