@@ -76,8 +76,9 @@ local blast_particles = {particles_object("amik\\anomaly\\electra\\electra2_spar
 local blast_sounds = {sound_object("device\\bridge\\motor_start"), sound_object("anomaly\\electra_blast"), sound_object("device\\bridge\\motor_stop")}
 
 function activate_blast()
-    blast_sounds[1]:play(db.actor, 0, sound_object.s2d)
-    CreateTimeEvent("execute_blast_haruka", "execute_blast_haruka", blast_sounds[1]:length() / 1000, blast)
+    -- blast_sounds[1]:play(db.actor, 0, sound_object.s2d)
+    -- CreateTimeEvent("execute_blast_haruka", "execute_blast_haruka", blast_sounds[1]:length() / 1000, blast)
+    blast()
 end
 
 function blast()
@@ -110,10 +111,10 @@ function blast()
             data.power = data.power - 2 -- remove 2 charge for each hit
         end
     end)
-    CreateTimeEvent("play_end_sfx_haruka", "play_end_sfx_haruka", blast_sounds[2]:length() / 2000, function()
-        blast_sounds[3]:play(db.actor, 0, sound_object.s2d)
-        return true
-    end)
+    -- CreateTimeEvent("play_end_sfx_haruka", "play_end_sfx_haruka", blast_sounds[2]:length() / 2000, function()
+    --     blast_sounds[3]:play(db.actor, 0, sound_object.s2d)
+    --     return true
+    -- end)
     set_data(id, data)
     return true
 end
@@ -122,11 +123,17 @@ function deactivate_blast()
     return
 end
 
-local powers = {
-    ["tank"] = {activate_tank, deactivate_tank},
-    ["sprint"] = {activate_speed, deactivate_speed},
-    ["recharge"] = {activate_blast, deactivate_blast}
-}
+function exec(str)
+    -- ui_inventory lololol
+    if str then
+		str = str_explode(str,"%.") -- dot needs escape character!
+		if str[1] and str[2] and _G[ str[1] ] and _G[ str[1] ][ str[2] ] then
+			_G[ str[1] ][ str[2] ](obj)
+		else
+			print_dbg("Could not exec function %s", str)
+		end
+	end
+end
 
 local current_outfit
 local start_time
@@ -158,7 +165,7 @@ function activate_powers()
         print_dbg("equipped power: %s", data.supply and data.supply.ability or "none")
         if not data.supply then return end
 
-        if not data.supply.ability or not powers[data.supply.ability] then
+        if not data.supply.ability or not ini_powers:section_exist(data.supply.ability) then
             send_tip(db.actor, gc("st_err_none"), nil, "swiss_knife", 6000)
 
             return
@@ -182,20 +189,21 @@ function activate_powers()
         current_outfit = id
         local duration = (ini_powers:r_float_ex(data.supply.ability, "power_duration") * 1000) or DURATION 
         local cooldown = ini_powers:r_float_ex(data.supply.ability, "power_cooldown") or COOLDOWN
-        local delay = power_active == "recharge" and 0 or sounds[1]:length() / 1000
-        if power_active ~= "recharge" then
-            sounds[1]:play(db.actor, 0, sound_object.s2d)
-        end
+        local delay =  sounds[1]:length() / 1000
+        sounds[1]:play(db.actor, 0, sound_object.s2d)
+        -- if power_active ~= "recharge" then
+        -- end
         CreateTimeEvent("exo_powers", "activate_powers", delay, maintain_power, duration, cooldown)
     end
 end
 
 -- continually run and watch for outfit changes
-function maintain_power( duration, cooldown)
+function maintain_power(duration, cooldown)
     local id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
+    -- there should be a better way to do this i think
     if not st[power_active][2]:playing() then
         print_dbg("start activate power")
-        powers[power_active][1]()
+        exec(ini_powers:r_string_ex(power_active, "power_start"))
         st[power_active][2]:play(db.actor, 0, sound_object.s2d)
     end
     if id ~= current_outfit then
@@ -215,7 +223,7 @@ function maintain_power( duration, cooldown)
 end
 
 function deactivate_powers(cooldown)
-    powers[power_active][2]()
+    exec(ini_powers:r_string_ex(power_active, "power_end"))
     if st[power_active][2]:playing() then 
         st[power_active][2]:stop()
     end
