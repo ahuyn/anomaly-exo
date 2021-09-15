@@ -8,6 +8,20 @@ local init_data = item_exo_device.init_data
 local print_dbg = item_exo_device.print_dbg
 local effect = particles_object("artefact\\effects\\af_electra_show_flash_00")
 
+local st = {}
+local ini_powers = ini_file("items\\settings\\exo_power_cfg.ltx")
+
+-- assemble the sound object tables ahead of time
+function build_sound_tables()
+    ini_powers:section_for_each(function(section)
+        printf("Building sound table for %s", section)
+        st[section] = {}
+        st[section][1] = sound_object(ini_powers:r_string_ex(section, "snd_windup"))
+        st[section][2] = sound_object(ini_powers:r_string_ex(section, "snd_duration"))
+        st[section][3] = sound_object(ini_powers:r_string_ex(section, "snd_cooldown"))
+    end)
+end
+
 local function on_key_press(key)
     local bind = dik_to_bind(key)
 
@@ -39,6 +53,8 @@ function deactivate_speed()
     level.remove_pp_effector(6969)
 end
 
+local armored = false
+
 function activate_tank()
     send_tip(db.actor, gc("st_act_tank"), nil, "swiss_knife", 6000)
     speed.add_speed("gotta_go_Fast", 0.8, false)
@@ -58,9 +74,6 @@ local radius = 10
 local blast_particles = {particles_object("amik\\anomaly\\electra\\electra2_sparks"), particles_object("amik\\anomaly\\electra\\electra_dust_distort")}
 
 local blast_sounds = {sound_object("device\\bridge\\motor_start"), sound_object("anomaly\\electra_blast"), sound_object("device\\bridge\\motor_stop")}
-
-local exo_sounds = {sound_object("exo\\wind_up_exo"), sound_object("exo\\boost"), sound_object("exo\\wind_down_exo")}
-
 
 function activate_blast()
     blast_sounds[1]:play(db.actor, 0, sound_object.s2d)
@@ -121,7 +134,6 @@ local DURATION = 8000
 local COOLDOWN = 20
 local on_cooldown = false
 local power_active = false
-local armored = false
 local active_power
 
 function activate_powers()
@@ -152,7 +164,7 @@ function activate_powers()
             return
         end
 
-        local drain = SYS_GetParam(2, data.supply.name, "power_cost") or 20
+        local drain = ini_powers:r_float_ex(data.supply.ability, "power_cost") or 20
 
         if data.power < drain + 10 then
             -- insufficient power
@@ -164,26 +176,27 @@ function activate_powers()
         data.power = clamp(data.power - drain, 0, 400)
         set_data(id, data)
         power_active = data.supply.ability
+        sounds = st[power_active]
         start_time = time_global()
         print_dbg("saved tg %s", start_time)
         current_outfit = id
-        local duration =( SYS_GetParam(2, data.supply.name, "power_duration") * 1000) or DURATION 
-        local cooldown = SYS_GetParam(2, data.supply.name, "power_cooldown") or COOLDOWN
-        local delay = power_active == "recharge" and 0 or exo_sounds[1]:length() / 1000
+        local duration = (ini_powers:r_float_ex(data.supply.ability, "power_duration") * 1000) or DURATION 
+        local cooldown = ini_powers:r_float_ex(data.supply.ability, "power_cooldown") or COOLDOWN
+        local delay = power_active == "recharge" and 0 or sounds[1]:length() / 1000
         if power_active ~= "recharge" then
-            exo_sounds[1]:play(db.actor, 0, sound_object.s2d)
+            sounds[1]:play(db.actor, 0, sound_object.s2d)
         end
-        CreateTimeEvent("exo_powers", "activate_powers", delay, maintain_power, power_active, duration, cooldown)
+        CreateTimeEvent("exo_powers", "activate_powers", delay, maintain_power, duration, cooldown)
     end
 end
 
 -- continually run and watch for outfit changes
-function maintain_power(power, duration, cooldown)
+function maintain_power( duration, cooldown)
     local id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
-    if not exo_sounds[2]:playing() then
+    if not st[power_active][2]:playing() then
         print_dbg("start activate power")
-        powers[power][1]()
-        exo_sounds[2]:play(db.actor, 0, sound_object.s2d)
+        powers[power_active][1]()
+        st[power_active][2]:play(db.actor, 0, sound_object.s2d)
     end
     if id ~= current_outfit then
         print_dbg("bruh you switched")
@@ -203,10 +216,10 @@ end
 
 function deactivate_powers(cooldown)
     powers[power_active][2]()
-    if exo_sounds[2]:playing() then 
-        exo_sounds[2]:stop()
+    if st[power_active][2]:playing() then 
+        st[power_active][2]:stop()
     end
-    exo_sounds[3]:play(db.actor, 0, sound_object.s2d)
+    st[power_active][3]:play(db.actor, 0, sound_object.s2d)
     power_active = false
     on_cooldown = true
     CreateTimeEvent("exo_powers", "deactivate_power", cooldown, reset_cooldown)
@@ -261,4 +274,5 @@ end
 function on_game_start()
     RegisterScriptCallback("on_key_press", on_key_press)
     RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
+    build_sound_tables()
 end
