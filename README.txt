@@ -21,6 +21,10 @@ Drag and drop gamedata folder.
 Uninstallation:
 Open up your game and get rid of any miitary battery units and exoskeleton PSUs. Remove the game files affected.
 
+Credits
+- Desman Metzger for providing exoskeleton sounds
+- Crepis for new icons
+- HarukaSai for contributing electrical nova power
 
 Changelog:
 V2.0
