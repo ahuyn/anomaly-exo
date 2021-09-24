@@ -13,7 +13,10 @@
 local exo_devices = {}
 -- cached properties of exo devices
 local cache = {}
+local warn = false
+local threshold = 25
 
+local gc                  = game.translate_string
 function print_dbg(txt, ...)
 	if exo_mcm.get_config("debug") then
 		printf("arti_exo | %s | " .. txt, time_global(), ...)
@@ -237,6 +240,7 @@ function actor_item_to_ruck(obj)
             obj:set_additional_max_weight(obj:get_additional_max_weight() + weight)
             print_dbg("modifying weight by +%s, final weight %s", weight, obj:get_additional_max_weight())
         end
+        warn = false
     end
 end
 
@@ -251,6 +255,7 @@ function actor_item_to_slot(obj)
             obj:set_additional_max_weight(obj:get_additional_max_weight() - weight)
             print_dbg("modifying weight by -%s, final weight %s", weight, obj:get_additional_max_weight())
         end
+        warn = false
     end
 end
 
@@ -363,6 +368,16 @@ function manage_drain()
         base_drain = modify_drain(base_drain, data)
         data.power = clamp(data.power - base_drain, 0, 400)
         set_data(id, data)
+
+        if warn and data.power > threshold then
+            warn = false
+        end
+        -- low power warn
+        if not warn and data.power < threshold then
+            warn = true
+            news_manager.send_tip(db.actor, gc("st_low_power"), nil, "swiss_knife", 6000)
+        end
+
     end
 end
 
@@ -394,7 +409,6 @@ function ui_inventory.UIInventory:Action_Custom(obj, bag, temp, i)
 	end
 end
 
-local gc                  = game.translate_string
 local clr_r  = utils_xml.get_color("d_red")
 local clr_g  = utils_xml.get_color("d_green")
 local clr_y  = utils_xml.get_color("yellow")

@@ -162,35 +162,27 @@
 	</string>
 	
 	<string id="st_err_none">
-		<text>[EXO_CONTROL_KERNEL_MSG] WARN: FUNCTIONALITY NOT FOUND</text>
+		<text>[SYSCTL] WARN: FUNCTIONALITY NOT FOUND</text>
 	</string>
 	<string id="st_err_power">
-		<text>[EXO_CONTROL_KERNEL_MSG] WARN: POWER INSUFFICIENT</text>
+		<text>[SYSCTL] WARN: POWER INSUFFICIENT</text>
 	</string>
 	<string id="st_err_cooldown">
-		<text>[EXO_CONTROL_KERNEL_MSG] WARN: SYS TEMP ABOVE SAFE THRESHOLD</text>
+		<text>[SYSCTL] WARN: SYS TEMP ABOVE SAFE THRESHOLD</text>
 	</string>
 	<string id="st_ok_cooldown">
-		<text>[EXO_CONTROL_KERNEL_MSG] INFO: SYS TEMP UNDER SAFE THRESHOLD</text>
+		<text>[SYSCTL] INFO: SYS TEMP UNDER SAFE THRESHOLD</text>
 	</string>
 	<string id="st_act_tank">
-		<text>[EXO_CONTROL_KERNEL_MSG] INFO: GRAVITATIONAL BARRIER ACTIVE</text>
+		<text>[SYSCTL] INFO: GRAVITATIONAL BARRIER ACTIVE</text>
 	</string>
 	<string id="st_act_sprint">
-		<text>[EXO_CONTROL_KERNEL_MSG] INFO: MOTOR OVERCLOCK ACTIVE</text>
+		<text>[SYSCTL] INFO: MOTOR OVERCLOCK ACTIVE</text>
 	</string>
 
-	<string id="kb_power">
-		<text>Check exoskeleton power</text>
+	<string id="st_low_power">
+		<text>[SYSCTL] WARN: BATTERY LOW</text>
 	</string>
-	
-	<string id="st_no_exo">
-		<text>No exoskeleton equipped.</text>
-	</string>
-	<string id="st_check_power">
-		<text>Exoskeleton power at %s.</text>
-	</string>
-
 	
 	<string id="ui_mcm_menu_exo">
 		<text>Powered Exos</text>
