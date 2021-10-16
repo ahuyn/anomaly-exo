@@ -38,15 +38,44 @@ local quality_community = {
     ["isg"] = true,
     ["monolith"] = true,
 }
+
+
+local furniture = {
+    ["esc_m_trader"] = true,
+    ["red_m_lesnik"] = true
+}
+
+local blacklisted_comms = {
+    ["trader"] = true,
+    ["monster"] = true
+}
+
+function get_real_community(npc)
+
+	if furniture[npc:name()] then
+		return "stalker"
+	end
+	local community = character_community(npc)
+	if not blacklisted_comms[community] then
+		return community
+	end
+	local squad_community = get_object_squad(npc):get_squad_community()
+	if not blacklisted_comms[squad_community] then
+		return squad_community
+	else
+		return default
+	end
+end
+
 function spawn_psus(npc)
 	local is_trader = trader_autoinject.get_trader_type(npc) == trader_autoinject.SUPPLIER
 	if not is_trader then return end
 
-	local community = npc:character_community()
+	local community = get_real_community(npc)
 	local loot_table = quality_community[community] and dup_table(trade_table[2]) or dup_table(trade_table[1])
 	local supply_level = trader_autoinject.supply_level(npc)
 	if loot_table[supply_level] then
-		if supply_level == "supplies_5" and quality_community[community] and math.random(2) == 1 then
+		if supply_level == "supplies_5" and quality_community[community] then
 			loot_table[supply_level]["recipe_exo_"..math.random(1, 3)] = 1
 		end
 		trader_autoinject.spawn_items(npc, loot_table[supply_level], true)
