@@ -136,7 +136,7 @@ function spawn_gear(npc, outfit_section)
         if (psu_roll < milpsu_chance) then
 			alife_create_item( "exo_power_supply_military", npc)
 		elseif (psu_roll < psu_chance) then
-			death_manager.spawn_with_condition("exo_power_supply", npc)
+			alife_create_item("exo_power_supply", npc)
 		end
 	end
 end
