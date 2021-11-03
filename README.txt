@@ -14,7 +14,7 @@ Exoskeleton batteries:
 Exoskeleton power supplies:
 - Power supplies can be installed on exoskeletons. These increase power capacity and efficiency at a cost to carryweight.
 - Power supplies can be looted, crafted, and purchased.
-- The rarest power supplies have unique powers that can be activated with double-tap shift.
+- The rarest power supplies have unique powers that can be activated with double-tapping the sprint key.
 
 Installation:
 Drag and drop gamedata folder.

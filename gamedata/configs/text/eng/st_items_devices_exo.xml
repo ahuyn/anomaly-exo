@@ -41,7 +41,7 @@
 		%c[d_blue] • %c[ui_gray_2] increases power capacity by 200%\n
 		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 80%\n
 		%c[d_blue] • %c[ui_gray_2] passively regenerate power while standing still\n
-		%c[d_blue] • %c[ui_gray_2] double-tap shift to launch electrical nova\n
+		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ to launch electrical nova\n
 		</text>
 	</string>
 	
@@ -55,7 +55,7 @@
 		%c[d_blue] • %c[ui_gray_2] prototype device\n
 		%c[d_blue] • %c[ui_gray_2] increases power capacity by 100%\n
 		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 30%\n
-		%c[d_blue] • %c[ui_gray_2] double-tap shift for major damage reduction\n
+		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ for major damage reduction\n
 		%c[d_blue] • %c[ui_gray_2] 20 energy cost, 8 second duration, 20 second cooldown\n
 		</text>
 	</string>
@@ -71,7 +71,7 @@
 		%c[d_blue] • %c[ui_gray_2] increases power capacity by 100%\n
 		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 30%\n
 		%c[d_blue] • %c[ui_gray_2] moderate electric power consumption\n
-		%c[d_blue] • %c[ui_gray_2] double-tap shift for major speed boost\n
+		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ for major speed boost\n
 		%c[d_blue] • %c[ui_gray_2] sprint into enemies to deal ramming damage\n
 		%c[d_blue] • %c[ui_gray_2] 20 energy cost, 8 second duration, 20 second cooldown\n
 		</text>
