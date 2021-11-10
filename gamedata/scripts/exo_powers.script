@@ -23,6 +23,12 @@ function build_sound_tables()
 end
 
 local function on_key_press(key)
+
+    local inventory = GetActorMenu()
+	if (inventory and inventory:IsShown()) then
+		return
+	end
+    
     local bind = dik_to_bind(key)
 
     if bind == 7 then
