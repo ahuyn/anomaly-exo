@@ -27,6 +27,9 @@ Credits
 - HarukaSai for contributing electrical nova power
 
 Changelog:
+V2.1
+- Migrated to use weight.script from demonized. Adjusted weight of top end PSUs
+- Option for keybind activated exo powers
 V2.0
 - Completely reworked how exo batteries and power sources work. Read the readme!
 - Batteries, power supplies are no longer associated with the backpack. They are implicit in the item itself.

@@ -121,7 +121,8 @@ function remove_psu(obj)
     local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
     if current_id == id then
         print_dbg("Remove PSU: Prior weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
-        obj:set_additional_max_weight(obj:get_additional_max_weight() + SYS_GetParam(2, data.supply.name, "inv_weight"))
+        -- obj:set_additional_max_weight(obj:get_additional_max_weight() + SYS_GetParam(2, data.supply.name, "inv_weight"))
+        weight.remove_weight("sexo")
         print_dbg("Remove PSU: After weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
     end
     data.supply = nil
@@ -141,7 +142,8 @@ function install_psu(suit, data, psu)
         local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
         if current_id == suit:id() then
             print_dbg("Install PSU: Prior weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
-            suit:set_additional_max_weight(suit:get_additional_max_weight() - SYS_GetParam(2, data.supply.name, "inv_weight"))
+            -- suit:set_additional_max_weight(suit:get_additional_max_weight() - SYS_GetParam(2, data.supply.name, "inv_weight"))
+            weight.add_weight("sexo",  -1 * SYS_GetParam(2, data.supply.name, "inv_weight"), false)
             print_dbg("Install PSU: After weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
         end
         set_data(suit:id(), data)

@@ -1,0 +1,24 @@
+
+
+------------------------------------------------------------------
+--- This is the file to control how your exo powers are activated.
+--- Below, this activates exo powers with a keybind.
+------------------------------------------------------------------
+
+local function on_key_release(key)
+
+    local inventory = GetActorMenu()
+	if (inventory and inventory:IsShown()) then
+		return
+	end
+    if bind == key_bindings.kCUSTOM20 then
+        exo_powers.activate_powers()
+    end
+end
+
+
+
+
+function on_game_start()
+    RegisterScriptCallback("on_key_release",on_key_release)
+end

@@ -286,7 +286,6 @@ function actor_on_footstep(material, power, hud_view, flags)
 end
 
 function on_game_start()
-    RegisterScriptCallback("on_key_press", on_key_press)
     RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
     build_sound_tables()
 end
