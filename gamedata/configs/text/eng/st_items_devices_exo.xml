@@ -140,6 +140,9 @@
 	<string id="st_remove_psu">
 		<text>remove PSU</text>
 	</string>
+	<string id="kb_power">
+		<text>Activate powers</text>
+	</string>
 	
 	<string id="st_dot">
 		<text>•</text>
