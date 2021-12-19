@@ -118,15 +118,9 @@ function remove_psu(obj)
     if not data.supply then return end
     if data.power > 100 then data.power = 100 end
     alife_create_item(data.supply.name, db.actor)
-    local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
-    if current_id == id then
-        print_dbg("Remove PSU: Prior weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
-        -- obj:set_additional_max_weight(obj:get_additional_max_weight() + SYS_GetParam(2, data.supply.name, "inv_weight"))
-        weight.remove_weight("sexo")
-        print_dbg("Remove PSU: After weight of item %s is %s",obj:section(), obj:get_additional_max_weight())
-    end
     data.supply = nil
     set_data(id, data)
+    adjust_weight(obj)
 end
 
 function install_psu(suit, data, psu)
@@ -138,20 +132,41 @@ function install_psu(suit, data, psu)
         
         data.supply = dup_table(cache[sec_p])
         print_dbg("Installing PSU %s with drain %s, capacity %s", data.supply.name, data.supply.drain, data.supply.max)
-        
-        local current_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
-        if current_id == suit:id() then
-            print_dbg("Install PSU: Prior weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
-            -- suit:set_additional_max_weight(suit:get_additional_max_weight() - SYS_GetParam(2, data.supply.name, "inv_weight"))
-            weight.add_weight("sexo",  -1 * SYS_GetParam(2, data.supply.name, "inv_weight"), false)
-            print_dbg("Install PSU: After weight of item %s is %s",suit:section(), suit:get_additional_max_weight())
-        end
         set_data(suit:id(), data)
+        adjust_weight(suit)
         alife_release(psu)
         -- play some sound?
     	xr_sound.set_sound_play(AC_ID,"inv_aam_open")
     end
 end
+
+-- Update the weight of an exoskeleton factoring in the weight of the PSU
+function adjust_weight(obj)
+    print_dbg("begin adjust weight for %s", obj:section())
+    if not is_exo(obj) then return end
+
+    local base_weight = SYS_GetParam(2, obj:section(), "inv_weight")
+    local upgrades = utils_item.get_upgrades_installed(obj)
+    local add_inv_weight = 0
+    for _, upgrade in pairs(upgrades) do
+        local section = ini_sys:r_string_ex(upgrade, "section")
+        local weight_adj = ini_sys:r_string_ex(section,"inv_weight")
+        local op = string.sub(weight_adj, 1, 1)
+        local val = tonumber(string.sub(weight_adj, 2))
+
+        add_inv_weight = op == "+" and add_inv_weight + val or add_inv_weight - val
+        --printf(add_inv_weight)
+    end
+
+    local data = exo_devices[obj:id()]
+    base_weight = base_weight + add_inv_weight
+    if data and data.supply and data.supply.name then
+        base_weight = base_weight + SYS_GetParam(2, data.supply.name, "inv_weight")
+    end
+    print_dbg("set weight of %s to %s", obj:section(), base_weight)
+    obj:set_weight(base_weight)
+end
+
 -- charge exo with battery
 
 function menu_battery(obj)
@@ -231,33 +246,9 @@ end
 
 local current_outfit
 
-function actor_item_to_ruck(obj)
-    local id = obj:id()
-    local c_outfit_id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0 
-    print_dbg("to ruck, saved id %s, current id %s, obj id %s", current_outfit, c_outfit_id, id)
-    if id == current_outfit and id ~= c_outfit_id then    
-        local data = get_data(id)
-        if data.supply then
-            local weight = SYS_GetParam(2, data.supply.name, "inv_weight")
-            obj:set_additional_max_weight(obj:get_additional_max_weight() + weight)
-            print_dbg("modifying weight by +%s, final weight %s", weight, obj:get_additional_max_weight())
-        end
-        warn = false
-    end
-end
-
-function actor_item_to_slot(obj)
-    local id = obj:id()
-    print_dbg("to slot, current id %s, obj id %s", current_outfit, id)
-    local data = get_data(id)
-    if data then
-        current_outfit = id
-        if data.supply then
-            local weight = SYS_GetParam(2, data.supply.name, "inv_weight")
-            obj:set_additional_max_weight(obj:get_additional_max_weight() - weight)
-            print_dbg("modifying weight by -%s, final weight %s", weight, obj:get_additional_max_weight())
-        end
-        warn = false
+function on_move(obj)
+    if is_exo(obj) then
+        adjust_weight(obj)
     end
 end
 
@@ -459,13 +450,18 @@ local function load_state(mdata)
 	exo_devices = mdata.exo_devices or {}
 end
 
+function custom_recipes()
+    
+end
+
 function on_game_start()
     RegisterScriptCallback("save_state",save_state)
     RegisterScriptCallback("load_state",load_state)
     RegisterScriptCallback("ActorMenu_on_item_drag_drop",on_item_drag_dropped)
 	RegisterScriptCallback("server_entity_on_unregister",se_device_on_unregister)
 	RegisterScriptCallback("actor_on_update",actor_on_update)
-	RegisterScriptCallback("actor_item_to_slot",actor_item_to_slot)
-	RegisterScriptCallback("actor_item_to_ruck",actor_item_to_ruck)
+
+	RegisterScriptCallback("actor_item_to_slot",on_move)
+	RegisterScriptCallback("actor_item_to_ruck",on_move)
 	RegisterScriptCallback("actor_on_first_update",actor_on_first_update)
 end
