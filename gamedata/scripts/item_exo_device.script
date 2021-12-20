@@ -151,10 +151,12 @@ function adjust_weight(obj)
     for _, upgrade in pairs(upgrades) do
         local section = ini_sys:r_string_ex(upgrade, "section")
         local weight_adj = ini_sys:r_string_ex(section,"inv_weight")
-        local op = string.sub(weight_adj, 1, 1)
-        local val = tonumber(string.sub(weight_adj, 2))
+        if weight_adj then
+            local op = string.sub(weight_adj, 1, 1)
+            local val = tonumber(string.sub(weight_adj, 2))
 
-        add_inv_weight = op == "+" and add_inv_weight + val or add_inv_weight - val
+            add_inv_weight = op == "+" and add_inv_weight + val or add_inv_weight - val
+        end
         --printf(add_inv_weight)
     end
 
