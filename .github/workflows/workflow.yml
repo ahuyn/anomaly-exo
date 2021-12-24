@@ -27,6 +27,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install dependencies
+        run: |
+          cp -r anomaly-dependencies/trader_autoinject/gamedata .
+          cp -r anomaly-dependencies/workshop_autoinject/gamedata . 
+          cp -r anomaly-dependencies/speed/gamedata . 
+
       - name: Get current date
         id: date
         run: echo "::set-output name=today::$(date +'%Y.%m.%d')"
