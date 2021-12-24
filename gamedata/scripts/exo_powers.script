@@ -265,10 +265,12 @@ local function ram()
         local obj = level.get_target_obj()
         local dist = level.get_target_dist()
         if not obj or not (IsStalker(obj) or IsMonster(obj)) or dist > 2.1 then return end
-        local is_rhino = db.actor:item_in_slot(7) and string.find(db.actor:item_in_slot(7), "nosorog") or false
+        local actor = db.actor
+        local suit = db.actor:item_in_slot(7)
+        local is_rhino = suit and string.find(suit:section(), "nosorog") or false
         local h = hit()
         h.type = hit.strike
-        h.draftsman = db.actor
+        h.draftsman = actor
         h.power = is_rhino and 1 or 0.6
         h.bone = "bip01_spine"
         level.add_cam_effector("camera_effects\\hit_front.anm", 5923, false, "")
