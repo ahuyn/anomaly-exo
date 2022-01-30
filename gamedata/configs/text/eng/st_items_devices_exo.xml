@@ -212,4 +212,13 @@
 		<text>Enable Debug Logs in console</text>
 	</string>
 
+	<string id="ui_mcm_menu_exo_power">
+		<text>Exo Power keybind</text>
+	</string>
+	<string id="ui_mcm_exo_power_keybind">
+		<text>Activate PSU power.</text>
+	</string>
+	<string id="ui_mcm_exo_power_keybind_desc">
+		<text>Used to activate exoskeleton related powers.</text>
+	</string>
 </string_table>
