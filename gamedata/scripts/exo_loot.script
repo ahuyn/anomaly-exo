@@ -87,7 +87,7 @@ function add_recipes()
 	workshop_autoinject.add_new_recipe(2, "exo_power_supply", "1, recipe_basic_3, itm_backpack,1,batteries_exo,1,prt_i_copper,4,prt_i_scrap,4")
 	workshop_autoinject.add_new_recipe(2, "exo_power_supply_proto", "1, recipe_exo_1, exo_power_supply_military,1,af_surge,1,af_dummy_battery_af_aam,1,prt_i_transistors,4")
 	workshop_autoinject.add_new_recipe(2, "exo_power_supply_tank", "1, recipe_exo_2, exo_power_supply_military,1,af_surge,1,af_full_empty_af_aam,1,prt_i_resistors,4")
-	workshop_autoinject.add_new_recipe(2, "exo_power_supply_sprint", "1, recipe_exo_3, exo_power_supply_military,1,af_cooler,1,af_dummy_battery_af_aam,1,prt_i_capacitors,4")
+	workshop_autoinject.add_new_recipe(2, "exo_power_supply_sprint", "1, recipe_exo_3, exo_power_supply_military,1,af_cooler,1, af_electra_flash_af_aam,1,prt_i_capacitors,4")
 end
 
 -- monkey patch
