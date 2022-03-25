@@ -1,6 +1,7 @@
 get_data = item_exo_device.get_data
 set_data = item_exo_device.set_data
 init_data = item_exo_device.init_data
+get_config = exo_mcm.get_config
 local trade_table = {
 	{ -- not quality 
 		["supplies_3"] = {
@@ -110,28 +111,25 @@ end
 
 -- dead man gear spawning
 
-
--- arti exo, make these configurable --
-local battery_chance = 0.7
-local battery_double_chance = 0.2
 local psu_chance = 0.2
 
 function spawn_gear(npc, outfit_section)
 
 	-- spawn PSU and milbatts --
-	if outfit_section and (string.find(outfit_section, "nosorog") or string.find(outfit_section, "exo_outfit")) then
+	if outfit_section and SYS_GetParam(0, outfit_section, "repair_type") == "outfit_exo" then
 		-- two dice rolls to spawn battery and PSU
-		local battery_roll = math.random()
-        local psu_roll = math.random()
+		local loot_roll = math.random()
+		local battery_chance = get_config("battery_chance") or 0.7
         local milpsu_chance = quality_community[npc:character_community()] and 0.1 or 0.03 
 
-		if (battery_roll < battery_chance) then
+		if (loot_roll < battery_chance) then
 			death_manager.spawn_with_condition(npc, "batteries_exo", math.random(20,80)/100)
 		end
-		if (battery_roll < battery_double_chance) then
+		if (loot_roll < battery_chance / 3) then
 			death_manager.spawn_with_condition(npc, "batteries_exo", math.random(20,80)/100)
         end
-        
+		
+        local psu_roll = math.random()
         -- spawn milpsu first, if no then spawn crappy psu
         if (psu_roll < milpsu_chance) then
 			alife_create_item( "exo_power_supply_military", npc)

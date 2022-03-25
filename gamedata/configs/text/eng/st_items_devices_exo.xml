@@ -208,6 +208,12 @@
 	<string id="ui_mcm_exo_sprint_drain_desc">
 		<text>Multiplier on power drain when sprinting.</text>
 	</string>
+	<string id="ui_mcm_exo_battery_chance">
+		<text>Battery drop chance.</text>
+	</string>
+	<string id="ui_mcm_exo_battery_chance_desc">
+		<text>Chance that stalkers will drop batteries. Exoskeleton wearers only!</text>
+	</string>
 	<string id="ui_mcm_exo_debug_desc">
 		<text>Enable Debug Logs in console</text>
 	</string>

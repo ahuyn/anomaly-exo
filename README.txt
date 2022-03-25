@@ -27,6 +27,8 @@ Credits
 - HarukaSai for contributing electrical nova power
 
 Changelog:
+V2.2
+- Made the battery drop chance adjustable.
 V2.1
 - Migrated to use weight.script from demonized. Adjusted weight of top end PSUs
 - Option for keybind activated exo powers
