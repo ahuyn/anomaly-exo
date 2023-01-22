@@ -1,5 +1,3 @@
-local last_click = nil
-local send_tip = news_manager.send_tip
 local gc = game.translate_string
 local is_exo = item_exo_device.is_exo
 local get_data = item_exo_device.get_data
@@ -9,69 +7,94 @@ local print_dbg = item_exo_device.print_dbg
 local effect = particles_object("artefact\\effects\\af_electra_show_flash_00")
 
 local st = {}
-local ini_powers = ini_file("items\\settings\\exo_power_cfg.ltx")
+local ini_powers = item_exo_device.ini_powers
 
--- assemble the sound object tables ahead of time
-function build_sound_tables()
-    ini_powers:section_for_each(function(section)
-        printf("Building sound table for %s", section)
-        st[section] = {}
-        st[section][1] = sound_object(ini_powers:r_string_ex(section, "snd_windup"))
-        st[section][2] = sound_object(ini_powers:r_string_ex(section, "snd_duration"))
-        st[section][3] = sound_object(ini_powers:r_string_ex(section, "snd_cooldown"))
-    end)
-end
-
-local function on_key_press(key)
-
-    local inventory = GetActorMenu()
-	if (inventory and inventory:IsShown()) then
-		return
-	end
-    
-    local bind = dik_to_bind(key)
-
-    if bind == 7 then
-        -- print_dbg("Pressed sprint")
-        local tg = time_global()
-
-        if not last_click then
-            last_click = tg
-        else
-            if tg < last_click + 400 then
-                activate_powers()
-            end
-
-            last_click = nil
-        end
-    end
-end
+local sprint_active
 
 function activate_speed()
     speed.add_speed("gotta_go_Fast", 1.5, false)
     send_tip(db.actor, gc("st_act_sprint"), nil, "swiss_knife", 6000)
     level.add_pp_effector("electra.ppe", 6969, true)
     -- electra ppe
+    sprint_active = true
 end
 
 function deactivate_speed()
     speed.remove_speed("gotta_go_Fast")
     level.remove_pp_effector(6969)
+    sprint_active = false
 end
 
-local armored = false
+
+function passive_sprint_off()
+    speed.remove_speed("exo_speed", 1.05, false)
+end
+
+function passive_sprint_on()
+    speed.remove_speed("exo_speed")
+end
+
+local function ram()
+    local obj = level.get_target_obj()
+    local dist = level.get_target_dist()
+    if not obj or not (IsStalker(obj) or IsMonster(obj)) or dist > 2.1 then return end
+    local suit = db.actor:item_in_slot(7)
+    local is_rhino = suit and string.find(suit:section(), "nosorog") or false
+    local h = hit()
+    h.type = hit.strike
+    h.draftsman = db.actor
+    h.power = is_rhino and 1 or 0.6
+    h.bone = "bip01_spine"
+    level.add_cam_effector("camera_effects\\hit_front.anm", 5923, false, "")
+    level.add_pp_effector("bloody.ppe", 9230, false)
+    level.set_pp_effector_factor(9230, 0.2)
+    obj:hit(h)
+end
+
+
+function actor_on_footstep(material, power, hud_view, flags)
+    if not sprint_active or not IsMoveState("mcSprint") then return end
+    ram()
+    effect:play_at_pos(db.actor:position())
+end
+
+
+local armored = 0
 
 function activate_tank()
     send_tip(db.actor, gc("st_act_tank"), nil, "swiss_knife", 6000)
     speed.add_speed("gotta_go_Fast", 0.8, false)
     level.add_pp_effector("blur.ppe", 6969, true)
-    armored = true
+    armored = 2
 end
 
 function deactivate_tank()
     speed.remove_speed("gotta_go_Fast")
     level.remove_pp_effector(6969)
-    armored = false
+    armored = 1
+end
+
+function passive_tank_off()
+    armored = 0
+end
+
+function passive_tank_on()
+    armored = 1
+end
+
+local hit_tbl = {
+    [hit.fire_wound] = {0.9, 0.1},
+    [hit.wound] = {0.9, 0.5},
+    [hit.burn] = {1.1},
+    [hit.shock] = {1.1},
+    [hit.chemical_burn] = {1.1},
+}
+
+function actor_on_before_hit(s_hit)
+    if armored > 0 and hit_tbl[s_hit.type] then
+        local mult = hit_tbl[s_hit.type][armored] or hit_tbl[s_hit.type][1]
+        s_hit.power = s_hit.power * mult
+    end
 end
 
 -- Haruwu
@@ -82,21 +105,8 @@ local blast_particles = {particles_object("amik\\anomaly\\electra\\electra2_spar
 local blast_sounds = {sound_object("device\\bridge\\motor_start"), sound_object("anomaly\\electra_blast"), sound_object("device\\bridge\\motor_stop")}
 
 function activate_blast()
-    -- blast_sounds[1]:play(db.actor, 0, sound_object.s2d)
-    -- CreateTimeEvent("execute_blast_haruka", "execute_blast_haruka", blast_sounds[1]:length() / 1000, blast)
-    blast()
-end
-
-function blast()
     local pos = db.actor:position()
     local h = hit()
-    local exosuit = db.actor:item_in_slot(7)
-    local id = exosuit:id()
-    local data = get_data(id)
-	
-    if not data then
-        data = init_data(id)
-    end
 	
     h.type = hit.shock
     h.draftsman = db.actor
@@ -109,19 +119,12 @@ function blast()
     blast_particles[2]:play_at_pos(pos)
 
     level.iterate_nearest(pos, radius, function(obj)
-        if data.power < 30 then return true end
 
         if obj and obj:alive() and obj:id() ~= AC_ID then
             obj:hit(h)
             effect:play_at_pos(obj:position())
-            data.power = data.power - 2 -- remove 2 charge for each hit
         end
     end)
-    -- CreateTimeEvent("play_end_sfx_haruka", "play_end_sfx_haruka", blast_sounds[2]:length() / 2000, function()
-    --     blast_sounds[3]:play(db.actor, 0, sound_object.s2d)
-    --     return true
-    -- end)
-    set_data(id, data)
     return true
 end
 
@@ -129,165 +132,7 @@ function deactivate_blast()
     return
 end
 
-function exec(str)
-    -- ui_inventory lololol
-    if str then
-		str = str_explode(str,"%.") -- dot needs escape character!
-		if str[1] and str[2] and _G[ str[1] ] and _G[ str[1] ][ str[2] ] then
-			_G[ str[1] ][ str[2] ](obj)
-		else
-			print_dbg("Could not exec function %s", str)
-		end
-	end
-end
-
-local current_outfit
-local start_time
-local DURATION = 8000
-local COOLDOWN = 20
-local on_cooldown = false
-local power_active = false
-local active_power
-
-function activate_powers()
-    if on_cooldown or power_active ~= false then
-        -- cooling down
-        send_tip(db.actor, gc("st_err_cooldown"), nil, "swiss_knife", 6000)
-
-        return
-    end
-
-    local exosuit = db.actor:item_in_slot(7)
-
-    if exosuit and is_exo(exosuit) then
-        local id = exosuit:id()
-        local sec = exosuit:section()
-        local data = get_data(id)
-
-        if not data then
-            data = init_data(id)
-        end
-
-        print_dbg("equipped power: %s", data.supply and data.supply.ability or "none")
-        if not data.supply then return end
-
-        if not data.supply.ability or not ini_powers:section_exist(data.supply.ability) then
-            send_tip(db.actor, gc("st_err_none"), nil, "swiss_knife", 6000)
-
-            return
-        end
-
-        local drain = ini_powers:r_float_ex(data.supply.ability, "power_cost") or 20
-
-        if data.power < drain + 10 then
-            -- insufficient power
-            send_tip(db.actor, gc("st_err_power"), nil, "swiss_knife", 6000)
-
-            return
-        end
-
-        data.power = clamp(data.power - drain, 0, 400)
-        set_data(id, data)
-        power_active = data.supply.ability
-        sounds = st[power_active]
-        start_time = time_global()
-        print_dbg("saved tg %s", start_time)
-        current_outfit = id
-        local duration = (ini_powers:r_float_ex(data.supply.ability, "power_duration") * 1000) or DURATION 
-        local cooldown = ini_powers:r_float_ex(data.supply.ability, "power_cooldown") or COOLDOWN
-        local delay =  sounds[1]:length() / 1000
-        sounds[1]:play(db.actor, 0, sound_object.s2d)
-        -- if power_active ~= "recharge" then
-        -- end
-        CreateTimeEvent("exo_powers", "activate_powers", delay, maintain_power, duration, cooldown)
-    end
-end
-
--- continually run and watch for outfit changes
-function maintain_power(duration, cooldown)
-    local id = db.actor:item_in_slot(7) and db.actor:item_in_slot(7):id() or 0
-    -- there should be a better way to do this i think
-    if not st[power_active][2]:playing() then
-        print_dbg("start activate power")
-        exec(ini_powers:r_string_ex(power_active, "power_start"))
-        st[power_active][2]:play(db.actor, 0, sound_object.s2d)
-    end
-    if id ~= current_outfit then
-        print_dbg("bruh you switched")
-        deactivate_powers(cooldown)
-        return true
-    end
-
-    if time_global() > start_time + duration then
-        print_dbg("time's up")
-        deactivate_powers(cooldown)
-
-        return true
-    end
-
-    return false
-end
-
-function deactivate_powers(cooldown)
-    exec(ini_powers:r_string_ex(power_active, "power_end"))
-    if st[power_active][2]:playing() then 
-        st[power_active][2]:stop()
-    end
-    st[power_active][3]:play(db.actor, 0, sound_object.s2d)
-    power_active = false
-    on_cooldown = true
-    CreateTimeEvent("exo_powers", "deactivate_power", cooldown, reset_cooldown)
-end
-
-function reset_cooldown()
-    on_cooldown = false
-    send_tip(db.actor, gc("st_ok_cooldown"), nil, "swiss_knife", 6000)
-
-    return true
-end
-
-function actor_on_before_hit(s_hit)
-    if not (s_hit.type == hit.wound or s_hit.type == hit.fire_wound) then return end
-
-    if armored then
-        if s_hit.type == hit.fire_wound then
-            s_hit.power = s_hit.power / 2
-        end
-
-        if s_hit.type == hit.wound then
-            s_hit.power = s_hit.power / 10
-        end
-    end
-end
-
-local function ram()
-    if IsMoveState("mcSprint") and power_active == "sprint" then
-        local obj = level.get_target_obj()
-        local dist = level.get_target_dist()
-        if not obj or not (IsStalker(obj) or IsMonster(obj)) or dist > 2.1 then return end
-        local actor = db.actor
-        local suit = db.actor:item_in_slot(7)
-        local is_rhino = suit and string.find(suit:section(), "nosorog") or false
-        local h = hit()
-        h.type = hit.strike
-        h.draftsman = actor
-        h.power = is_rhino and 1 or 0.6
-        h.bone = "bip01_spine"
-        level.add_cam_effector("camera_effects\\hit_front.anm", 5923, false, "")
-        level.add_pp_effector("bloody.ppe", 9230, false)
-        level.set_pp_effector_factor(9230, 0.2)
-        obj:hit(h)
-        print_dbg("BONK")
-    end
-end
-
-function actor_on_footstep(material, power, hud_view, flags)
-    if not power_active then return end
-    ram()
-    effect:play_at_pos(db.actor:position())
-end
-
 function on_game_start()
     RegisterScriptCallback("actor_on_footstep", actor_on_footstep)
-    build_sound_tables()
+    RegisterScriptCallback("actor_on_before_hit", actor_on_before_hit)
 end

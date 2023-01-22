@@ -15,6 +15,7 @@ auto_attach				                               = false
 cform                                                  = skeleton 
 description                              = st_itm_exo_psu_descr
 inv_weight                               = 2.07
+weight_mod                               = 3
 inv_name                                 = st_itm_exo_psu_name
 inv_name_short                           = st_itm_exo_psu_name
 inv_grid_width                           = 2
@@ -24,7 +25,8 @@ inv_grid_y                               = 0
 icons_texture                            = ui\ui_icon_exo_psu
 cost                                     = 5125
 use_condition							 = false
-is_psu                                   = true
+drain                  = 0.98
+capacity               = 150
 snd_on_take								    = outfit
 use2_functor                			= item_exo_device.check_install_psu
 use2_action_functor         		    = item_exo_device.func_install_psu
@@ -33,22 +35,28 @@ use2_action_functor         		    = item_exo_device.func_install_psu
 [exo_power_supply_military]:exo_power_supply
 visual                                   = dynamics\psu\exo_backpack_proto.ogf
 description                              = st_itm_exo_psu_mili_descr
-inv_weight                               = 5.97
+inv_weight                               = 2.97
+weight_mod                               = 6
 inv_name                                 = st_itm_exo_psu_mili_name
 inv_name_short                           = st_itm_exo_psu_mili_name
 inv_grid_x                               = 2
 inv_grid_y                               = 0
+drain                  = 0.8
+capacity               = 250
 cost                                     = 15956
 
 [exo_power_supply_proto]:exo_power_supply
 visual                                   = dynamics\devices\psu\exo_psu_top.ogf
 description                              = st_itm_exo_psu_sci_descr
-inv_weight                               = 9.52
+weight_mod                               = 10
 inv_name                                 = st_itm_exo_psu_sci_name
 inv_name_short                           = st_itm_exo_psu_sci_name
 inv_grid_x                               = 4
 inv_grid_y                               = 0
 cost                                     = 55956
+drain                  = 1
+capacity               = 125
+power                  = recharge
 1icon_layer_x       	                           = 100
 1icon_layer_y      		                           = 100
 1icon_layer_scale                        = 0.65
@@ -59,14 +67,18 @@ description                              = st_itm_exo_psu_tank_descr
 inv_name                                 = st_itm_exo_psu_tank_name
 inv_name_short                           = st_itm_exo_psu_tank_name
 1icon_layer                              = af_empty
-power_duration                          = 8
+drain                  = 1.1
+capacity               = 300
+power                  = tank
 
 [exo_power_supply_sprint]:exo_power_supply_proto
 description                              = st_itm_exo_psu_sprint_descr
 inv_name                                 = st_itm_exo_psu_sprint_name
 inv_name_short                           = st_itm_exo_psu_sprint_name
 1icon_layer                              = af_electra_flash
-power_duration                          = 8
+drain                  = 0.9
+capacity               = 250
+power                  = sprint
 
 
 [batteries_exo]:identity_immunities,tch_device

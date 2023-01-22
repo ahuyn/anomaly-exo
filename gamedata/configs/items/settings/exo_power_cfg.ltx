@@ -7,9 +7,15 @@ power_duration                          = 8
 power_cooldown                          = 20
 power_start                             = exo_powers.activate_speed
 power_end                               = exo_powers.deactivate_speed
+passive_off                             = exo_powers.passive_sprint_off
+passive_on                              = exo_powers.passive_sprint_on
+
 [tank]:sprint
 power_start                             = exo_powers.activate_tank
 power_end                               = exo_powers.deactivate_tank
+passive_off                             = exo_powers.passive_tank_off
+passive_on                              = exo_powers.passive_tank_on
+
 [recharge]:sprint
 power_duration                          = 1
 snd_windup                              = device\bridge\motor_start
@@ -18,3 +24,5 @@ snd_cooldown                            = device\bridge\motor_stop
 radius                                  = 10
 power_start                             = exo_powers.activate_blast
 power_end                               = exo_powers.deactivate_blast
+passive_off                             = exo_powers.nothing
+passive_on                              = exo_powers.nothing
