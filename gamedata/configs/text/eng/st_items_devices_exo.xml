@@ -21,7 +21,7 @@
 		<text>Mil-spec Exoskeleton power supply</text>
 	</string>
 	<string id="st_itm_exo_psu_mili_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is professionally made in a factory and mounts seamlessly to an exoskeleton. It is hefty but very durable and quite energy-efficient, providing a substantial boost to energy capacity and a minor benefit to energy efficiency. However, it is quite heavy.\n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, install onto an exoskeleton.\n \nThis model is professionally made in a factory and mounts seamlessly to an exoskeleton. It is hefty but very durable and quite energy-efficient, providing a substantial boost to energy capacity and a minor benefit to energy efficiency. \n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] military item\n
@@ -34,12 +34,10 @@
 		<text>Experimental PSU "Reactor"</text>
 	</string>
 	<string id="st_itm_exo_psu_sci_descr">
-		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists, using the latently static properties of the Battery artifact to generate endless amounts of power. The contained artifact feedback loop continuously generates small amounts of power, and passively charges the power supply of existing exoskeletons - while it is a near limitless power source, the copious amounts of containment and shielding built into the backpack make it unbearably heavy. \n \n
+		<text>Auxiliary power supply equipped on exoskeletons to improve their energy capacity. Popular with most stalkers given the rather inefficient powerplants that come with standard exoskeletons. To use, drag onto an exoskeleton.\n \nThis model is an experimental prototype constructed based on schematics you obtained from Ecologists, using the latently static properties of the Battery artifact to generate endless amounts of power. The contained artifact feedback loop continuously generates small amounts of power, and passively charges the power supply of existing exoskeletons - while it is a near limitless power source, the additional power capacity has been removed in order to properly contain the artifact.\n \n
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] prototype device\n
-		%c[d_blue] • %c[ui_gray_2] increases power capacity by 150%\n
-		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 80%\n
 		%c[d_blue] • %c[ui_gray_2] passively regenerate power while standing still\n
 		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ to launch electrical nova\n
 		</text>
@@ -53,8 +51,8 @@
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] prototype device\n
-		%c[d_blue] • %c[ui_gray_2] increases power capacity by 200%\n
-		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 30%\n
+		%c[d_blue] • %c[ui_gray_2] increases power capacity by 150%\n
+		%c[d_blue] • %c[ui_gray_2] increases power consumption by 5%\n
 		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ for major damage reduction\n
 		%c[d_blue] • %c[ui_gray_2] 20 energy cost, 8 second duration, 20 second cooldown\n
 		</text>
@@ -68,11 +66,11 @@
 		%c[ui_gray_3]PROPERTIES:\n
 		%c[d_blue] • %c[ui_gray_2] technological item\n
 		%c[d_blue] • %c[ui_gray_2] valuable\n
-		%c[d_blue] • %c[ui_gray_2] increases power capacity by 200%\n
-		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 30%\n
+		%c[d_blue] • %c[ui_gray_2] increases power capacity by 100%\n
+		%c[d_blue] • %c[ui_gray_2] reduces power consumption by 10%\n
 		%c[d_blue] • %c[ui_gray_2] moderate electric power consumption\n
 		%c[d_blue] • %c[ui_gray_2] double-tap $$ACTION_SPRINT_TOGGLE$$ for major speed boost\n
-		%c[d_blue] • %c[ui_gray_2] sprint into enemies to deal ramming damage\n
+		%c[d_blue] • %c[ui_gray_2] sprint into enemies to deal damage\n
 		%c[d_blue] • %c[ui_gray_2] 20 energy cost, 8 second duration, 20 second cooldown\n
 		</text>
 	</string>
