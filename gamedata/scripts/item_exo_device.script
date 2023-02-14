@@ -424,7 +424,7 @@ function ui_item.build_desc_header(obj, sec, str)
         local power = string.format("%.2f", data.power)
         local max_power = data.supply and data.supply.max or 100
         local clr = utils_xml.get_color_con((data.power/max_power) * 100)
-        display_str =  display_str .."  " .. clr_y .. gc("st_dot") .. " " .. clr_2 ..  gc("st_power") .. " ".. clr .. data.power .. "/" .. max_power .. "\\n"
+        display_str =  display_str .."  " .. clr_y .. gc("st_dot") .. " " .. clr_2 ..  gc("st_power") .. " ".. clr .. power .. "/" .. max_power .. "\\n"
         local psu = gc("st_equipped_none")
         clr = clr_r
         if data.supply then
